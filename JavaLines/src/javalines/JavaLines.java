@@ -2,7 +2,6 @@ package javalines;
 
 import java.awt.EventQueue;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -11,11 +10,14 @@ import javax.swing.JFileChooser;
 import java.awt.BorderLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.JTextArea;
@@ -35,19 +37,17 @@ public class JavaLines {
 		return tagValues;
 	}
 
-	String load(File file) {
+	String load(File file) throws IOException {
 		try {
-			Scanner sc = new Scanner(file);
+			BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
 			int count = 0;
 			int count_empty = 0;
 			int count_comment = 0;
 			int count_single_comment = 0;
 			boolean has_comment = false;
-
-			while (sc.hasNextLine()) {
-
-				String line = sc.nextLine();
-
+			String line;
+			
+			while ((line = br.readLine()) != null) {
 				// Remove emtpy space
 				line = line.replaceAll("\\s+", "");
 
@@ -87,8 +87,8 @@ public class JavaLines {
 				// Any line
 				count += 1;
 			}
-
-			sc.close();
+			
+			br.close();
 
 			return "Archivo '" + file.getName() + "'\n" + "Lineas en el archivo: " + count + "\n" + "Lineas en blanco: "
 					+ count_empty + "\n" + "Comentarios //: " + count_single_comment + "\n"
@@ -161,7 +161,12 @@ public class JavaLines {
 
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					File file = fc.getSelectedFile();
-					txtrHelloWorld.setText(load(file));
+					try {
+						txtrHelloWorld.setText(load(file));
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		});
